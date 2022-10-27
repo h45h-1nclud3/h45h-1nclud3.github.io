@@ -87,13 +87,13 @@ social:
 analytics:
   provider               : "google-universal" # false (default), "google", "google-universal", "custom"
   google:
-    tracking_id          : "UA-165194559-1"
+    tracking_id          : #"UA-165194559-1"
     anonymize_ip         : # true, false (default)
 
 
 # Site Author
 author:
-  name             : "Amr '1nclud3' Fathi"
+  name             : "Amr Fathy"
   avatar           : /assets/images/site_data/avatar.png # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
   bio              : "Muslim, Human and Security Researcher"
   location         : "Egypt"
