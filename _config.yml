@@ -94,7 +94,7 @@ analytics:
 # Site Author
 author:
   name             : "Amr Fathi"
-  avatar           : /assets/images/site_data/avatar.jpg # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
+  avatar           : /assets/images/site_data/avatar.png # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
   bio              : "Low Level Security Stuff"
   location         : "Egypt"
   email            :
