@@ -115,7 +115,11 @@ put_plt_addr = p64(0x400520)
 put_got_addr = p64(0x600c50)
 ```
 
-Unlike 32-bit applications, the 64-bit applications don’t store the arguments of their functions on the stack, instead they store them in the registers then if there were a lot of arguments and the all the registers were used, they store the rest on the stack but in our binary there are a few arguments so all of them stored in the registers in that order **(RDI, RSI, RDX, RCX)**. So, our first gadget will be (pop  rdi) because the **puts** function takes only one argument and to get the address of our (pop  rdi), I will show you two different tools that you can use to build your **ROP gadgets** and you are not limited to these two tools there are many others. First one is by using ***radare2*** (which an incredible tool for reversing and binary exploitation).
+Unlike 32-bit applications, the 64-bit applications don’t store the arguments of their functions on the stack, instead they store them in the registers then if there were a lot of arguments and the all the registers were used, they store the rest on the stack but in our binary there are a few arguments so all of them stored in the registers in that order **(RDI, RSI, RDX, RCX)**. 
+
+So, our first gadget will be (pop  rdi) because the **puts** function takes only one argument and to get the address of our (pop  rdi), I will show you two different tools that you can use to build your **ROP gadgets** and you are not limited to these two tools there are many others. 
+
+First one is by using ***radare2*** (which an incredible tool for reversing and binary exploitation).
 
 `radare2 bitterman`
 
