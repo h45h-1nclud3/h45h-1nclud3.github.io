@@ -1,0 +1,448 @@
+---
+title: "Exploring PE Files with Python"
+classes: wide
+header:
+  teaser: /assets/images/tutorials/pe-file.png
+
+ribbon: green
+description: "PE files refers to **Portable Executable** files in Windows which may have any extension of the listed below"
+categories:
+  - Tutorials
+---
+
+## **What is PE files?**
+
+PE files refers to **Portable Executable** files in Windows which may have any extension of the listed below
+
+### **Windows Executable files Extensions:**
+
+- **.exe** → Executable File
+- **.dll** → Dynamic Link Library
+- **.sys/.drv** → System File / Kernel Driver
+- **.ocx** → ActiveX Control
+- **.cp**l → Control Panel
+- **.scr** → ScreenSaver
+
+## **Environment Setup**
+
+To follow along with me you should install **pefile** module
+
+```
+pip3 install pefile
+```
+
+**OR** clone the repository and follow the setup instructions
+
+```
+https://github.com/erocarrera/pefile
+```
+
+## **PE File Structure**
+
+### **DOS Header:**
+
+- **e_magic** → magic number of DOS header is ‘MZ’ (0x5a4d) and ‘MZ’ refers to **Mark Zbikowski** the designer of MS-DOS executable file format.
+- **e_lfnew** → a pointer to the PE header (NT Header).For most Windows programs DOS header contains a DOS program which does nothing but prints **“This program cannot be run in DOS mode”**.
+
+![https://bufferoverflows.net/wp-content/uploads/2019/08/Selection_168-1024x397.jpg](https://bufferoverflows.net/wp-content/uploads/2019/08/Selection_168-1024x397.jpg)
+
+Note that in the picture above **e_magic** == 0x4d5a (because of little endian)
+
+[https://en.wikipedia.org/wiki/Endianness](https://en.wikipedia.org/wiki/Endianness)
+
+Get all information about PE header with **pefile** python module
+
+```python
+import pefile
+
+pe = pefile.PE("path_to_your_executable")
+
+pe.print_info() # Prints all Headers in a human readable format
+```
+
+```
+OUTPUT:
+```
+
+![https://bufferoverflows.net/wp-content/uploads/2019/08/Screenshot-from-2019-08-17-19-54-57.png](https://bufferoverflows.net/wp-content/uploads/2019/08/Screenshot-from-2019-08-17-19-54-57.png)
+
+```python
+import pefile
+
+pe = pefile.PE("path_to_your_executable")
+
+print("e_magic : " + hex(pe.DOS_HEADER.e_magic)) # Prints the e_magic field of the DOS_HEADER
+
+print("e_lfnew : " + hex(pe.DOS_HEADER.e_lfanew)) # Prints the e_lfnew field of the DOS_HEADER
+```
+
+```
+OUTPUT:
+
+e_magic : 0x5a4d
+e_lfnew : 0xd8
+```
+
+### **PE Header (NT Headers):**
+
+The only field we care about in the PE Header (NT_HEADER) is **Signature** which identify the file as a PE file and two other structures (FILE_HEADER and OPTIONAL_HEADER)
+
+- **Signature** == 0x5045 (‘PE’ in ASCII)
+- **FILE_HEADER**
+- **OPTIONAL_HEADER**
+
+```python
+import pefile
+
+pe = pefile.PE("path_to_your_executable")
+
+print("Signature : " + hex(pe.NT_HEADERS.Signature)) # Prints the Signature field of the NT_HEADERS
+```
+
+```
+OUTPUT:
+
+Signature : 0x4550
+```
+
+### **File Header:**
+
+- **Machine:** the architecture this binary is supposed to run on (**0x014C** == x86 binary and **0x8664** == x86-x64 binary)
+- **TimeDateStamp:** UNIX timestamp (seconds since epoch or 00:00:00 1/1/1970)
+- **NumberOfSections:** number of section headers
+- **Characteristics:** specify some characteristics of the PE file
+
+```python
+import pefile
+
+# Loading an executable
+
+pe = pefile.PE("path_to_your_executable")
+
+print("Machine : " + hex(pe.FILE_HEADER.Machine))
+
+# Check if it is a 32-bit or 64-bit binary
+
+if hex(pe.FILE_HEADER.Machine) == '0x14c':
+
+print("This is a 32-bit binary")
+
+else:
+
+print("This is a 64-bit binary")
+
+print("TimeDateStamp : " + pe.FILE_HEADER.dump_dict()['TimeDateStamp']['Value'].split('[')[1][:-1]
+
+)
+
+print("NumberOfSections : " + hex(pe.FILE_HEADER.NumberOfSections))
+
+print("Characteristics flags : " + hex(pe.FILE_HEADER.Characteristics))
+```
+
+```
+OUTPUT:
+
+Machine : 0x14c
+This is a 32-bit binary
+TimeDateStamp : Tue Jan 30 03:57:45 2018 UTC
+NumberOfSections : 0x5
+Characteristics flags : 0x10
+```
+
+### **Optional Header:**
+
+It is not optional at all, the following are the interesting fields in the Optional Header
+
+- **Magic**: depending on this value the binary will be interpreted as a 32-bit or 64-bit binary (**0x10B** == 32 bit and **0x20B** == 64 bit)
+- **AddressOfEntryPoint**: specifies the RVA (relative virtual address)
+- **ImageBase**: specifies the preferred virtual memory location where the beginning of the binary should be placed
+- **SectionAlignment**: specifies that sections must be aligned on boundaries which are multiples of this value
+- **FileAlignment**: if the data was written to the binary into chunks no smaller than this value
+- **SizeOfImage**: the amount of contigous memory that must be reserved to load the binary into memory
+- **DllCharacteristics**: specify some security characteristics for the PE file
+- **DataDirectory[IMAGE_NUMBER_OF_DIRECTORY_ENTRIES]**: an array of Data Entries
+
+```python
+import pefile
+
+# Loading an executable
+
+pe = pefile.PE("path_to_your_executable")
+
+print("Magic : " + hex(pe.OPTIONAL_HEADER.Magic))
+
+# Check if it is a 32-bit or 64-bit binary
+
+if hex(pe.OPTIONAL_HEADER.Magic) == '0x10b':
+
+print("This is a 32-bit binary")
+
+elif hex(pe.OPTIONAL_HEADER.Magic) == '0x20b':
+
+print("This is a 64-bit binary")
+
+print("ImageBase : " + hex(pe.OPTIONAL_HEADER.ImageBase))
+
+print("SectionAlignment : " + hex(pe.OPTIONAL_HEADER.SectionAlignment))
+
+print("FileAlignment : " + hex(pe.OPTIONAL_HEADER.FileAlignment))
+
+print("SizeOfImage : " + hex(pe.OPTIONAL_HEADER.SizeOfImage))
+
+print("DllCharacteristics flags : " + hex(pe.OPTIONAL_HEADER.DllCharacteristics))
+
+print("DataDirectory: ")
+
+print("*" * 50)
+
+# print name, size and virtualaddress of every DATA_ENTRY in DATA_DIRECTORY
+
+for entry in pe.OPTIONAL_HEADER.DATA_DIRECTORY:
+
+print(entry.name + "\n|\n|---- Size : " + str(entry.Size) + "\n|\n|---- VirutalAddress : " + hex(entry.VirtualAddress) + '\n')
+
+print("*" * 50)
+```
+
+```
+OUTPUT:
+
+Magic : 0x10b
+This is a 32-bit binary
+ImageBase : 0x400000
+SectionAlignment : 0x1000
+FileAlignment : 0x200
+SizeOfImage : 0x46000
+DllCharacteristics flags : 0x8540
+DataDirectory:
+**************************************************
+IMAGE_DIRECTORY_ENTRY_EXPORT
+|
+|---- Size : 0
+|
+|---- VirutalAddress : 0x0
+
+IMAGE_DIRECTORY_ENTRY_IMPORT
+|
+|---- Size : 160
+|
+|---- VirutalAddress : 0x8534
+
+IMAGE_DIRECTORY_ENTRY_RESOURCE
+|
+|---- Size : 53856
+|
+|---- VirutalAddress : 0x38000
+
+IMAGE_DIRECTORY_ENTRY_EXCEPTION
+|
+|---- Size : 0
+|
+|---- VirutalAddress : 0x0
+
+IMAGE_DIRECTORY_ENTRY_SECURITY
+|
+|---- Size : 10808
+|
+|---- VirutalAddress : 0x5b6b0
+
+IMAGE_DIRECTORY_ENTRY_BASERELOC
+|
+|---- Size : 0
+|
+|---- VirutalAddress : 0x0
+
+IMAGE_DIRECTORY_ENTRY_DEBUG
+|
+|---- Size : 0
+|
+|---- VirutalAddress : 0x0
+
+IMAGE_DIRECTORY_ENTRY_COPYRIGHT
+|
+|---- Size : 0
+|
+|---- VirutalAddress : 0x0
+
+IMAGE_DIRECTORY_ENTRY_GLOBALPTR
+|
+|---- Size : 0
+|
+|---- VirutalAddress : 0x0
+
+IMAGE_DIRECTORY_ENTRY_TLS
+|
+|---- Size : 0
+|
+|---- VirutalAddress : 0x0
+
+IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG
+|
+|---- Size : 0
+|
+|---- VirutalAddress : 0x0
+
+IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT
+|
+|---- Size : 0
+|
+|---- VirutalAddress : 0x0
+
+IMAGE_DIRECTORY_ENTRY_IAT
+|
+|---- Size : 664
+|
+|---- VirutalAddress : 0x8000
+
+IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT
+|
+|---- Size : 0
+|
+|---- VirutalAddress : 0x0
+
+IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR
+|
+|---- Size : 0
+|
+|---- VirutalAddress : 0x0
+
+IMAGE_DIRECTORY_ENTRY_RESERVED
+|
+|---- Size : 0
+|
+|---- VirutalAddress : 0x0
+
+**************************************************
+```
+
+### **Sections Header:**
+
+Sections are group of code or data that have similar permissions in memory
+
+**Common Section Names:**
+
+- **.text** → the actual code the binary runs
+- **.data** → read/write data (globals)
+- **.rdata** → read-only data (strings)
+- **.bss** → Block Storage Segment (uninitialzed data format), often merged with the .data section
+- **.idata** → import address table, often merged with .text or .rdata sections
+- **.edata** → export address table
+- **.pdata** → some architectures like ARM, MIPS use these sections structures to aid in stack-walking at run-time
+- **PAGE*** → code/data which it’s fine to page out to disk if you’re running out of memory
+- **.reolc** → relocation information for where to modify the hardcoded addresses
+- **.rsrc** → resources like icons, other embedded binaries, this section has a structure organizing it like a filesystem
+
+**Common Structure of a Section Header:**
+
+- **Name**
+- **VirtualSize**
+- **VirtualAddress**
+- **SizeOfRawData**
+- **PointerToRawData**
+- **Characterisitcs**
+
+```python
+import pefile
+
+# Loading an executable
+
+pe = pefile.PE("path_to_your_executable")
+
+# Parsing every section from Sections Header
+
+print("Sections Info: \n")
+
+print("*" * 50)
+
+for section in pe.sections:
+
+print(section.Name.decode().rstrip('\x00') + "\n|\n|---- Vitual Size : " + hex(section.Misc_VirtualSize) + "\n|\n|---- VirutalAddress : " + hex(section.VirtualAddress) + "\n|\n|---- SizeOfRawData : " + hex(section.SizeOfRawData) + "\n|\n|---- PointerToRawData : " + hex(section.PointerToRawData) + "\n|\n|---- Characterisitcs : " + hex(section.Characteristics)+'\n')
+
+print("*" * 50)
+```
+
+```
+OUTPUT:
+
+Sections Info:
+
+**************************************************
+.text
+|
+|---- Vitual Size : 0x628f
+|
+|---- VirutalAddress : 0x1000
+|
+|---- SizeOfRawData : 0x6400
+|
+|---- PointerToRawData : 0x400
+|
+|---- Characterisitcs : 0x60000020
+
+.rdata
+|
+|---- Vitual Size : 0x1354
+|
+|---- VirutalAddress : 0x8000
+|
+|---- SizeOfRawData : 0x1400
+|
+|---- PointerToRawData : 0x6800
+|
+|---- Characterisitcs : 0x40000040
+
+.data
+|
+|---- Vitual Size : 0x25518
+|
+|---- VirutalAddress : 0xa000
+|
+|---- SizeOfRawData : 0x600
+|
+|---- PointerToRawData : 0x7c00
+|
+|---- Characterisitcs : 0xc0000040
+
+.ndata
+|
+|---- Vitual Size : 0x8000
+|
+|---- VirutalAddress : 0x30000
+|
+|---- SizeOfRawData : 0x0
+|
+|---- PointerToRawData : 0x0
+|
+|---- Characterisitcs : 0xc0000080
+
+.rsrc
+|
+|---- Vitual Size : 0xd260
+|
+|---- VirutalAddress : 0x38000
+|
+|---- SizeOfRawData : 0xd400
+|
+|---- PointerToRawData : 0x8200
+|
+|---- Characterisitcs : 0x40000040
+
+**************************************************
+```
+
+For more usage examples of **pefile** to get you familiar, please refer to the following link
+
+[https://github.com/erocarrera/pefile/blob/wiki/UsageExamples.md](https://github.com/erocarrera/pefile/blob/wiki/UsageExamples.md)
+
+## **Resources:**
+
+- [https://docs.microsoft.com/en-us/windows/win32/debug/pe-format](https://docs.microsoft.com/en-us/windows/win32/debug/pe-format)
+- [https://code.google.com/archive/p/corkami/wikis/PE.wiki](https://code.google.com/archive/p/corkami/wikis/PE.wiki)
+- [http://www.opensecuritytraining.info/LifeOfBinaries.html](http://www.opensecuritytraining.info/LifeOfBinaries.html)
+- [https://github.com/erocarrera/pefile](https://github.com/erocarrera/pefile)
+- [https://winitor.com/index.html](https://winitor.com/index.html)
+- [https://www.aldeid.com/wiki/PEiD](https://www.aldeid.com/wiki/PEiD)
+- [https://github.com/hasherezade/pe-sieve](https://github.com/hasherezade/pe-sieve)
+
+**To the next time, Happy learning!**
