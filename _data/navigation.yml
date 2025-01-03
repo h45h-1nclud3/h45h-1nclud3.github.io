@@ -1,7 +1,7 @@
 # main links
 main:
   - title: "Cyber Threat Intelligence"
-    url: /categories/#threat-intelligence
+    url: /categories/#cyber-threat-intelligence
   - title: "Malware Analysis"
     url: /categories/#malware-analysis
   - title: "Binary Exploitation"
