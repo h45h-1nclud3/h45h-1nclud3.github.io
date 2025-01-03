@@ -4,7 +4,7 @@ classes: wide
 header:
   teaser: /assets/images/cyber-threat-intelligence/Diamond-Model/diamond_model_intrusion_analysis_adversary_diagram_034e4dcd23.jpg
 
-ribbon: yellow
+ribbon: grey
 description: "The Diamond Model isn’t just another buzzword; it’s a practical tool that empowers CTI analysts"
 categories:
   - Cyber Threat Intelligence
