@@ -18,7 +18,7 @@ In this blog, we’ll take a tour of the Diamond Model—what it is, how it work
 
 ### What is the Diamond Model?
 
-![[/assets/images/cyber-threat-intelligence/Diamond-Model/diamond_model_intrusion_analysis_adversary_diagram_034e4dcd23.jpg]]
+![Diamond Model](/assets/images/cyber-threat-intelligence/Diamond-Model/diamond_model_intrusion_analysis_adversary_diagram_034e4dcd23.jpg)
 Reference: https://www.recordedfuture.com/blog/diamond-model-intrusion-analysis
 
 The Diamond Model of Intrusion Analysis, introduced by Sergio Caltagirone, Andrew Pendergast, and Christopher Betz in 2013, is a framework for analyzing and understanding cyber threats. It’s built around four core vertices:
