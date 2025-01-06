@@ -1,23 +1,13 @@
 ---
-
 title: "CTI and Digital Forensics are Distinct but Complementary Roles"
-
 classes: wide
-
 header:
-
   teaser: /assets/images/cyber-threat-intelligence/cti-vs-dfir/teaser.webp
 
-  
-
 ribbon: grey
-
 description: "This article explores how CTI and Digital Forensics complement each other and their distinct roles in cybersecurity."
-
 categories:
-
   - Cyber Threat Intelligence
-
 ---
 
 
