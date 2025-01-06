@@ -1,5 +1,5 @@
 ---
-title: "CTI and Digital Forensics are Distinct but Complementary Roles"
+title: "Digital Evidence: One Word But Different Objectives between CTI and DFIR"
 classes: wide
 header:
   teaser: /assets/images/cyber-threat-intelligence/cti-vs-dfir/teaser.png
