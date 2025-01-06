@@ -10,7 +10,6 @@ categories:
   - Cyber Threat Intelligence
 ---
 
-
 Hello Analysts around the world!
 
 Cyber Threat Intelligence (CTI) and Digital Forensics. While both involve evidence and data, their goals, methods, and outcomes differ significantly. This article explores how CTI and Digital Forensics complement each other and their distinct roles in cybersecurity.
